@@ -18,6 +18,21 @@ router.get('/api/v1', welcomeAPI);
 app.use(logger());
 app.use(json());
 app.use(router.routes());
+
+app.use(async (ctx: RouterContext, next: any) => {
+    try{
+        await next();
+        if(ctx.status === 404){
+            ctx.body = {err: "Resource not found"};
+        }
+    } catch(err: any){
+        ctx.body = {err: err};
+    }
+})
+
+
+
+
 app.use(articles.routes());
 
 app.listen(10888);

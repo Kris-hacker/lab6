@@ -39,17 +39,47 @@ const getById = async (ctx: RouterContext, next: any) => {
 }
 
 const updateArticle = async (ctx: RouterContext, next: any) => {
+    let c: any = ctx.request.body;
+    let title = c.title;
+    let fullText = c.fullText;
+    let id = +ctx.params.id;
+    // let {title, fullText} = ctx.request.body;
+    let newArticle = {title: title, fullText:fullText};
+    // if it exists then return the article as JSON.
+    // Otherwise return a 404 Not Found status code
+    if ((id < articles.length+1) && (id > 0)) {
+        articles[id-1] = newArticle;
+        ctx.body = newArticle;
+    } else {
+        ctx.status = 404;
+    }
     await next();
 }
 
 const deleteArticle = async (ctx: RouterContext, next: any) => {
-    await next();
+    let id = +ctx.params.id;
+       if ((id < articles.length+1) && (id > 0)) {
+           // Remove the article from the array
+           articles.splice(id-1, 1);
+           // Return a 204 No Content status code
+           ctx.status = 204;
+       } else {
+           // Return a 404 Not Found status code
+           ctx.status = 404;
+       }
+       await next();
 }
+
+// return 404 if URL not found
+router.all('*', async (ctx: RouterContext, next: any) => {
+    ctx.status = 404;
+    await next();
+});
 
 router.get('/',getAll);
 router.post('/', bodyParser() ,createArticle);
 router.get('/:id([0-9]{1,})',getById);
-router.put('/:id([0-9]{1,})',updateArticle);
+router.put('/:id([0-9]{1,})',bodyParser(),updateArticle);
 router.delete('/:id([0-9]{1,})',deleteArticle);
 
 export { router };
